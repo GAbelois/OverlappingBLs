@@ -1,0 +1,194 @@
+&mpi_param
+  use_mpi = .true.,  ! use MPI or not
+  npy = 8,
+  npz = 4            ! number of processors for MPI
+/
+
+&domain_param
+  nxt = 256,             ! number of x nodes, make sure nxt2/npy and nyt2/npy are integers
+  nyt = 256,             ! number of y nodes
+  nzt = 145,         	 ! number of z nodes + ghost point
+  lx_tot = 282.743334d0,          ! domain size in x direction
+  ly_tot = 282.743334d0,          ! domain size in y direction
+  lz_tot = 45.d0,      ! total height of the simulation
+  z_i = 45.d0           ! length scale in our LES, used for normalization and setting inversion with prop_mixed
+/
+
+&output_control
+  use_avgslice = .true.,
+  average_dim_num = 2,          ! if==2 then averages over x,y,t, if==1 then averages over y,t
+  output_video = .false.,        ! probably anything you want. Bottom of main.f90
+  base_time = 200,              ! time steps between consecutive outputs
+  video_freq = 200,
+  video_start = 0,
+  video_end = 500000,
+  flag_opt_3d = .false.,           ! flag to output 3d field
+  opt_3d_start = 80000,		  ! starting time step to output 3d field
+  flag_opt_pre = .true.,          ! flag to output pressure
+  flag_opt_eps = .true.,          ! flag to output dissipation
+  flag_opt_sgs = .true.,          ! flag to output sgs stresses
+  flag_opt_shear = .true.,        ! flag to output horizontal shear gradient
+  flag_opt_frac = .true.,         ! flag to output only a fraction of the 3d field
+  jx_opt_start = 1,
+  jy_opt_start = 1,
+  jz_opt_start = 1,
+  nxout  = 256,
+  nyout  = 256,
+  nzout  = 145,
+/
+
+&time_param
+  nsteps = 1000000,      		! total number of timesteps
+  dt = 0.15d0,           	! dimensional timestep (seconds)
+  c_count = 100,          	! time step to do the planar average
+  p_count = 500,       		! number of timesteps for averaging
+  cs_count = 5,          	! update smagorinsky dynamic coefficient
+  flag_restart = .true.,    	! whether or not continuing simulation from previous job
+  nt_restart = 500000
+/
+
+&flow_param
+  model = 5,
+  lbc_mom = 'stress free',
+  ubc_mom = 'wall'
+  u_star  = 0.0122d0			! wind stress friction velocity
+  u_scale = 0.0122d0,        	! scaling velocity
+  Pr = 0.4d0,				! turbulentg Prandtl number
+  restart_vel = .true.,       	! flag to initialize velocity field (true to restart/continue the flow field)
+  intp_vel = .false.,		! flag to interpolate the velocity field from coarse simulation 
+   inilag = .false.,			! flag to initialize eddy viscosity (should be false when restart/continueing the simulation)
+  DYN_init = 300,               	! timestep to start dynamical SGS model (should be zero when restart/continueing the simulation)
+  coriolis_forcing = .false.,   	! flag to use coriolis forcing (always false for ocean_flag=.true.)
+  freq_coriolis = 1.0e-4,     		! coriolis frequency
+  ug_dim = 0.0d0, 			! dimensional geostrophic wind
+  vg_dim = 0.0d0, 			! dimensional geostrophic wind
+  nu_molec = 1.01e-6,  			! kinemetic viscosity of water 
+  walltype = 'rough',			! smooth wall or rough
+  molec = .false.,
+  sgs = .true.,
+  dns_bc = .false., 
+  inflow = .false., 			! flag to use prescribed inflow
+  read_inflow_file = .false.,		! Target simulation 
+  interp = .false.,     			!  readin the restart file from precursor simulation and perform extrapolation 
+  write_inflow_file = .false.,		! Precursor simulation
+  read_ic_profile = .false.,		! Precursor simulation readin initial u, v, T profiles
+  jt_start_write = 160000,
+  l_fringe = 100.d0,			! length of blending zone (recycling)
+  ubc = 0,
+  damping_method = 3,
+  use_mean_p_force = .false.,   	! whether to use mean pressure gradient force
+  mean_p_force = 0.0d0,		! mean pressure gradient
+  ocean_flag = .true.,          	! flag to use ocean setup
+  flag_relaxForce = .false.,    	! flag to use relaxation forcing (cellular flow forcing)
+/
+
+&canopy_param
+  flag_canopy = .false.,
+  canopy_conf = 'stripe', 		! canopy configuration, "block" and "stripe"
+  use_field_scale = .true.,
+  lwest = 150.0d0,
+  least = 250.0d0,
+  lsouth = 201.5d0,
+  lnorth = 201.5d0,
+  LBB = 26.0d0,             ! the spacing between adjacent backbones
+  LGL = 8.0d0,              ! the length of the growth line
+  canopy_dir = 45.d0        ! orientation (degree) of the canopy relative to x-direction (positive counterclockwise)
+  Cd_const = 0.0148d0,			!
+  vel_exp = 2.0d0,
+/
+
+&temperature_param
+  theta_flag = .true.,      	! flag to use temperature field or not
+  restart_theta = .true.,     	! initialize the temperature field (true restart/continue the temperature field)
+  theta_init_time = 0,        	! when to start evolving temperature
+  inilag_sc = .false.,  		! not used
+  lbc = 1,			! 1 for prescribing the surface flux while 0 for prescribing the temperature
+  inv_strength = 0.1d0,       	! the temperature gradient in inverse layer
+  dTdz_top = 0.0d0,             	! temperature gradient at top (for atmosphere) or bottom (for ocean)
+  theta_top = 300.d0,   		! temperature at the top (probably abandoned)
+  T_scale = 300.d0,     		! normalization for temperature
+  wt_s = 0.d0,      			! heat flux (units of w*T, so Q/(rho*cp) )
+  T_init = 283.15       		! initialization of temperature profile???
+  flag_dynWT = .false.
+/
+
+&ocean_param
+  prop_mixed = 0.0d0		! the proportion of the mixed layer over the whole depth
+  flag_dynStress = .false.,	! flag to use dynamics wind stress
+  agl_stress = 0.d0		! the inclination angle of wind stress (w.r.t. x-direction)
+  stokes_flag = .true.,		! wheter to use stokes drift
+  amp_w = 1.13d0,        	! amplitude of surface waves???
+  lambda_w = 60.0d0,    		! wavelength of surface waves???
+  stokes_action = 'mono'
+  agl_Ust = 0.d0,       	! inclined angle of Stokes drift with respect to x-direction (in radians)
+  flag_crossVel = .false.   	! cross velocity for the all domain
+/
+
+&mode_relaxForce
+  nmod_cell = 2
+/
+&relax_force
+  u0_cell = 2.d0, 2.d0,
+  advU_cell = 0.d0, 0.d0,
+  advV_cell = 0.d0, 0.d0,
+  tt0_cell = 0,
+  wn_cell = 4, 1,
+  piPhix_cell = 0.3d0, 0.d0,
+  piPhiy_cell = -0.5d0, 0.d0
+  t_relax = 21600
+  wn_filter = 10,
+  type_filter = 'diagonal'
+/
+
+&con_param
+  pcon_flag = .false.,   ! concentration in the simulation (should be false when starting from scratch (restart/continue-important))
+  n_con = 3,            ! the number of the concentration fields (true number not counting endless)
+  flag_uptake = .false.        ! whether canopy uptake nutrients or not
+  pcon_init = 0,        ! timestep to initialize the concentration field
+  restart_pcon = .false.,    ! read concentration from vel_sc.out the (initialize the concentration field (restart/continue-imoprtant))
+  pcon_scale = 1.0,     ! scale use to normalize the concentration (kg/m3)
+  unit_pconScale = 'molecPcm3', ! unit of pcon_scale, not used in simulation
+  pcon_scheme = 3,              ! numerical scheme for concentration
+  periodicbcx = .true.,         ! use periodic conditions for concentration field on x
+  periodicbcy = .true.,         ! ditto for y
+  lbcp = 1,             ! if 1, impose oil flux at surface, if 2, impose oil concentration
+  pcon_sfc = 0.0,     	! imposed oil concentration at the surface
+  sc = 0.8,             ! schmidt number
+  sc_boun = 0.95,       ! schmidt number for the boundaries???
+  settling = .false.,    ! consider particle settling velocity
+  pcon_acc = .false.,   ! first order approximation for particle inertia (considering acceleration)
+  inflow_pcon = .false.,        ! lateral boundary conditions for Pcon ???
+  source_type = 'planar',		! source type: 'point', 'line', 'planar', and 'volume'
+  ini_src = 0,                  ! initial timestep to set up the source
+  end_src = 1000000,                  ! final timestep for source
+  active_pcon = .false.,        ! treat the concentration field as active scalar
+  pconsgs_acc_flag = .false.,   ! include inertial effects of subgrid scale (always false)
+  model_psgsacc = 1,            ! subgrid inertial effects model
+  cs_pa = 1.0e4,                ! coefficient for SGS acceleration of particles
+  flag_endless = .false.        ! whether to use endless
+/
+
+&particle_param
+  vel_settling = 21.6e-3, 10.8e-3, 5.4e-3 			! settling velocity of the particles
+  ratio_dens = 0.8340163, 0.8340163, 0.8340163 	! 859.8708/1031  ! density ratio between particl and fluid
+  vol_spec = 1.1629654e-3, 1.1629654e-3, 1.1629654e-3	! 1/859.8708  ! specific volume (reciproc of density)
+   pcon_sfc_flux =  0.d0, 5.d0, 0.d0, ! imposed flux of oil at surface
+/
+
+
+&mode_cell
+  nmod_cell = 2                 ! number of the mode of the celullar flow
+/
+&cellular_flow
+  u0_cell = 2.d0, 2.d0,         ! velocity scale for celullar flow
+  advU_cell = 6.2d0, 6.2d0,     ! phase vel of celullar flow in x-direction
+  advV_cell = -5.8d0, -5.8d0,   ! phase vel of celullar flow in y-direction
+  tt0_cell = 630000,            ! displacement timestep of the phase of the celullar flow
+  dph_cell = 100.d0, 100.d0,    ! depth of celullar flow
+  d_cell = 2000.d0, 5600.d0,    ! wavelength of celullar flow
+  piPhix_cell = 0.3d0, 0.d0,    ! phase displacement of celullar flow
+  piPhiy_cell = -0.5d0, 0.d0    ! phase displacement of celullar flow
+/
+
+&chem_param
+/
